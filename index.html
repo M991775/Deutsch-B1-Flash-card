@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10131c">
+  <title>Deutsch 1000 — B1 Vocabulary Trainer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#"><span class="brand-mark">D</span><span>Deutsch<span class="muted">1000</span></span></a>
+    <div class="top-actions">
+      <span id="connection-status" class="status online"><i></i> Saved on this device</span>
+    </div>
+  </header>
+  <main class="shell">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">YOUR GERMAN VOCABULARY WORKSPACE</p>
+        <h1>Build your <span>German B1</span>.</h1>
+        <p class="subheading">1,000 useful words. One card at a time.</p>
+      </div>
+      <div class="total-card"><strong id="total-count">20</strong><span>words loaded</span></div>
+    </section>
+
+    <section class="stats-grid">
+      <article class="stat-card"><span>Studied</span><strong id="studied-count">0</strong><small>cards seen</small></article>
+      <article class="stat-card"><span>Known</span><strong id="known-count">0</strong><small>marked as understood</small></article>
+      <article class="stat-card"><span>To review</span><strong id="review-count">0</strong><small>still learning</small></article>
+      <article class="stat-card progress-card"><span>Overall progress</span><strong id="progress-percent">0%</strong><div class="progress-track"><div id="progress-bar"></div></div></article>
+    </section>
+
+    <section class="workspace">
+      <aside class="sidebar">
+        <div class="side-group">
+          <label for="direction">Card direction</label>
+          <select id="direction"><option value="de-en">German → English + 中文</option><option value="en-de">English + 中文 → German</option></select>
+        </div>
+        <div class="side-group">
+          <label for="type-filter">Word category</label>
+          <select id="type-filter">
+            <option value="all">All categories</option>
+            <option value="noun">Nouns</option>
+            <option value="verb">Verbs</option>
+            <option value="adjective">Adjectives</option>
+            <option value="adverb">Adverbs</option>
+            <option value="preposition">Prepositions</option>
+            <option value="conjunction">Conjunctions</option>
+            <option value="expression">Expressions</option>
+            <option value="verb-preposition">Verb + preposition</option>
+            <option value="sentence-pattern">Sentence patterns</option>
+            <option value="connector">Connectors</option>
+          </select>
+        </div>
+        <div class="side-group">
+          <label for="status-filter">Study status</label>
+          <select id="status-filter"><option value="all">All cards</option><option value="new">Not studied</option><option value="studied">Studied (all rated)</option><option value="review">To review</option><option value="known">Understood</option></select>
+        </div>
+        <div class="side-group reset-group">
+          <button id="reset-progress-btn" class="button button-quiet" type="button">Reset progress</button>
+          <small id="reset-hint">Wait 5 seconds before progress is cleared.</small>
+        </div>
+        <div class="side-group">
+          <label for="search">Find a word</label>
+          <input id="search" type="search" placeholder="Search German, English…">
+        </div>
+        <div class="side-note"><strong>Study tip</strong><p>Try to recall the answer before flipping the card. Mark it honestly so your review list stays useful.</p></div>
+      </aside>
+      <section class="study-area">
+        <div class="deck-heading"><div><p class="eyebrow">FLASHCARD SESSION</p><h2 id="deck-title">All vocabulary</h2></div><span id="card-position" class="counter">1 / 20</span></div>
+        <div class="card" id="flashcard" role="button" tabindex="0" aria-label="Flashcard. Press Enter or Space to reveal the answer.">
+          <div class="card-top"><span id="word-type" class="tag">NOUN</span><span class="flip-hint">CLICK TO REVEAL <span>↗</span></span></div>
+          <div id="card-front" class="card-content"></div>
+          <div class="card-bottom"><span id="front-hint">German vocabulary</span><span class="card-symbol">↻</span></div>
+          <div id="card-back" class="card-back hidden"></div>
+        </div>
+        <div class="controls">
+          <button id="previous-btn" class="button button-quiet">← Previous</button>
+          <button id="flip-btn" class="button button-primary">Reveal answer</button>
+          <button id="next-btn" class="button button-quiet">Next →</button>
+        </div>
+        <div class="rating-row">
+          <button id="again-btn" class="rating rating-again"><span>↺</span><b>Repeat</b><small>Practise this again</small></button>
+          <button id="known-btn" class="rating rating-known"><span>✓</span><b>Understand</b><small>I've learned this</small></button>
+        </div>
+        <p id="feedback" class="feedback" aria-live="polite"></p>
+      </section>
+    </section>
+    <footer><span>Deutsch1000 · B1 vocabulary trainer</span><span>Your progress is saved locally in this browser.</span></footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
