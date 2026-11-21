@@ -16,7 +16,37 @@ function readProgress() {
 let progress = readProgress();
 let currentIndex = 0;
 let revealed = false;
-let filtered = [...words];
+let filtered = [];
+
+const historyKey = "deutsch1000-recent-v1";
+const MAX_RECENT = 10;
+
+function readHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(historyKey) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+let recentWordIds = readHistory();
+
+function saveHistory() {
+  localStorage.setItem(historyKey, JSON.stringify(recentWordIds));
+}
+
+function recordWord(word) {
+  if (!word) return;
+
+  recentWordIds = recentWordIds.filter(id => id !== word.id);
+  recentWordIds.push(word.id);
+
+  if (recentWordIds.length > MAX_RECENT) {
+    recentWordIds = recentWordIds.slice(-MAX_RECENT);
+  }
+
+  saveHistory();
+}
 
 const typeLabels = {
   noun: "NOUN",
@@ -55,12 +85,64 @@ function shuffleCards(cards) {
   return shuffled;
 }
 
+function selectRandomWord() {
+  if (!filtered.length) return -1;
+
+  // Exclude recently shown review cards.
+  let candidates = filtered.filter(word =>
+    !(statusOf(word) === "review" &&
+      recentWordIds.includes(word.id))
+  );
+
+  // If all available cards are temporarily excluded,
+  // relax the restriction.
+  if (!candidates.length) {
+    candidates = [...filtered];
+  }
+
+  // Known cards have only 20% of normal selection weight.
+  const weightedCandidates = candidates.map(word => ({
+    word,
+    weight: statusOf(word) === "known" ? 0.2 : 1
+  }));
+
+  const totalWeight = weightedCandidates.reduce(
+    (sum, item) => sum + item.weight,
+    0
+  );
+
+  let random = Math.random() * totalWeight;
+
+  for (const item of weightedCandidates) {
+    random -= item.weight;
+
+    if (random < 0) {
+      return filtered.indexOf(item.word);
+    }
+  }
+
+  return filtered.indexOf(
+    weightedCandidates[weightedCandidates.length - 1].word
+  );
+}
+
+function showRandomWord() {
+  currentIndex = selectRandomWord();
+  revealed = false;
+
+  if (currentIndex >= 0) {
+    recordWord(filtered[currentIndex]);
+  }
+
+  render();
+}
+
 function applyFilters() {
   const type = $("type-filter").value;
   const status = $("status-filter").value;
   const query = $("search").value.trim().toLowerCase();
 
-  const matchingWords = words.filter(word =>
+  filtered = words.filter(word =>
     (type === "all" || word.type === type) &&
     (status === "all" ||
       (status === "studied" && Boolean(progress[word.id]?.seen)) ||
@@ -72,13 +154,12 @@ function applyFilters() {
     ].join(" ").toLowerCase().includes(query))
   );
 
-  filtered = shuffleCards(matchingWords);
-  currentIndex = 0;
-  revealed = false;
-  render();
-
   const selected = $("type-filter").selectedOptions[0].textContent;
-  $("deck-title").textContent = type === "all" ? "All vocabulary" : selected;
+
+  $("deck-title").textContent =
+    type === "all" ? "All vocabulary" : selected;
+
+  showRandomWord();
 }
 
 function updateStats() {
@@ -178,9 +259,8 @@ function flip() {
 
 function move(delta) {
   if (!filtered.length) return;
-  currentIndex = (currentIndex + delta + filtered.length) % filtered.length;
-  revealed = false;
-  render();
+
+  showRandomWord();
 }
 
 function rate(status) {
@@ -221,44 +301,6 @@ $("previous-btn").onclick = () => move(-1);
 $("next-btn").onclick = () => move(1);
 $("again-btn").onclick = () => rate("review");
 $("known-btn").onclick = () => rate("known");
-
-let resetCountdown = null;
-let resetSeconds = 5;
-const resetButton = $("reset-progress-btn");
-const resetHint = $("reset-hint");
-
-resetButton.onclick = () => {
-  if (resetCountdown !== null) {
-    clearInterval(resetCountdown);
-    resetCountdown = null;
-    resetSeconds = 5;
-    resetButton.textContent = "Reset progress";
-    resetHint.textContent = "Reset cancelled. Your progress is safe.";
-    return;
-  }
-
-  resetSeconds = 5;
-  resetButton.textContent = `Cancel reset (${resetSeconds})`;
-  resetHint.textContent = "Progress will be cleared when the countdown ends.";
-  resetCountdown = setInterval(() => {
-    resetSeconds -= 1;
-    if (resetSeconds > 0) {
-      resetButton.textContent = `Cancel reset (${resetSeconds})`;
-      return;
-    }
-
-    clearInterval(resetCountdown);
-    resetCountdown = null;
-    progress = {};
-    localStorage.removeItem(progressKey);
-    currentIndex = 0;
-    revealed = false;
-    resetButton.textContent = "Reset progress";
-    resetHint.textContent = "Progress has been reset.";
-    applyFilters();
-    updateStats();
-  }, 1000);
-};
 
 ["direction", "type-filter", "status-filter"].forEach(id =>
   $(id).addEventListener("change", applyFilters)
